@@ -1,8 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Copy, Download, Cookie } from 'lucide-react';
-import Image from 'next/image';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { SparklesText } from '@/components/ui/sparkles-text';
 import html2canvas from 'html2canvas';
@@ -260,28 +259,36 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
     try {
       setSaveStatus("Capturing...");
       
-      // Configure html2canvas options for better quality
+      // Wait for any animations to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Use simpler html2canvas configuration
       const canvas = await html2canvas(modalRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2, // Higher resolution
+        scale: 1,
         useCORS: true,
         allowTaint: true,
         logging: false,
-        width: 854,
-        height: 600,
+        imageTimeout: 15000,
+        removeContainer: true,
+        foreignObjectRendering: false,
+        ignoreElements: (element) => {
+          // Ignore any problematic elements
+          return element.classList.contains('sr-only');
+        }
       });
       
-      // Convert canvas to blob
+      // Convert to blob
       canvas.toBlob((blob) => {
         if (blob) {
-          // Create download link
+          // Create download
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `fortune-cookie-${selectedCategory}-${new Date().toISOString().split('T')[0]}.png`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `fortune-cookie-${selectedCategory}-${new Date().toISOString().split('T')[0]}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
           URL.revokeObjectURL(url);
           
           setSaveStatus("Saved!");
@@ -292,7 +299,8 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
         }
       }, 'image/png');
       
-    } catch {
+    } catch (error) {
+      console.error('Save error:', error);
       setSaveStatus("Failed to save");
       setTimeout(() => setSaveStatus(""), 2000);
     }
@@ -307,10 +315,13 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[854px] max-w-none bg-white rounded-2xl border-0 shadow-2xl">
+        <DialogTitle className="sr-only">
+          Fortune Cookie - {selectedCategory} Category
+        </DialogTitle>
         <div ref={modalRef} className="p-6 text-center">
           {/* Cookie Image */}
           <div className="mb-6 flex justify-center items-center">
-            <Image
+            <img
               src="/cookie-final.png"
               alt="Fortune Cookie"
               width={579}
