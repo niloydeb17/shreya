@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Copy, Download, Cookie } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { SparklesText } from '@/components/ui/sparkles-text';
+import html2canvas from 'html2canvas';
 
 interface CookieModalProps {
   isOpen: boolean;
@@ -228,6 +229,7 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
   const [copyStatus, setCopyStatus] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const generateNewFortune = useCallback(() => {
     if (selectedCategory) {
@@ -252,29 +254,44 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
     }
   };
 
-  const saveFortune = () => {
+  const saveAsImage = async () => {
+    if (!modalRef.current) return;
+    
     try {
-      const fortuneData = {
-        fortune: currentFortune,
-        category: selectedCategory,
-        date: new Date().toISOString(),
-      };
+      setSaveStatus("Capturing...");
       
-      const blob = new Blob([JSON.stringify(fortuneData, null, 2)], {
-        type: 'application/json'
+      // Configure html2canvas options for better quality
+      const canvas = await html2canvas(modalRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher resolution
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: 854,
+        height: 600,
       });
       
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `fortune-${selectedCategory}-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // Create download link
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `fortune-cookie-${selectedCategory}-${new Date().toISOString().split('T')[0]}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          setSaveStatus("Saved!");
+          setTimeout(() => setSaveStatus(""), 2000);
+        } else {
+          setSaveStatus("Failed to save");
+          setTimeout(() => setSaveStatus(""), 2000);
+        }
+      }, 'image/png');
       
-      setSaveStatus("Saved!");
-      setTimeout(() => setSaveStatus(""), 2000);
     } catch {
       setSaveStatus("Failed to save");
       setTimeout(() => setSaveStatus(""), 2000);
@@ -290,7 +307,7 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[854px] max-w-none bg-white rounded-2xl border-0 shadow-2xl">
-        <div className="p-6 text-center">
+        <div ref={modalRef} className="p-6 text-center">
           {/* Cookie Image */}
           <div className="mb-6 flex justify-center items-center">
             <Image
@@ -334,7 +351,7 @@ export function CookieModal({ isOpen, onClose, selectedCategory }: CookieModalPr
             <Button 
               variant="outline" 
               className="flex-1 bg-white border-gray-200 hover:bg-gray-50 text-gray-900 font-medium text-xl py-2 px-4 rounded-[999px]"
-              onClick={saveFortune}
+              onClick={saveAsImage}
               disabled={isLoading}
             >
               <Download className="h-4 w-4 mr-2" />
