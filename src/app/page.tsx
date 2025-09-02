@@ -75,15 +75,6 @@ export default function Home() {
         </Button>
       </div>
       
-      {/* Footer.png Image at Bottom - Full Width */}
-      <div className="absolute bottom-0 left-0 right-0 z-15">
-        <img
-          src="/Footer.png"
-          alt="Footer"
-          className="w-full h-auto object-contain"
-        />
-      </div>
-      
       {/* Final.png Image at Bottom - Full Width */}
       <div className="absolute bottom-0 left-0 right-0 z-10">
         <img
