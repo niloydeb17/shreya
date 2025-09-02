@@ -93,6 +93,19 @@ export default function Home() {
         />
       </div>
 
+      {/* Bottom-right creator credit */}
+      <div className="absolute bottom-4 right-4 z-40">
+        <div className="text-white text-xs sm:text-sm">
+          <span>Created by: </span>
+          <span className="font-semibold">Shreya Roy Chowdhury</span>
+        </div>
+      </div>
+
+      {/* Bottom-left tagline */}
+      <div className="absolute bottom-4 left-4 z-40">
+        <div className="text-white text-xs sm:text-sm">Leave no crumbs behind</div>
+      </div>
+
       {/* Cookie Modal */}
       <CookieModal 
         isOpen={isModalOpen} 
