@@ -56,7 +56,7 @@ export default function Home() {
         <Button 
           variant="secondary"
           size="lg"
-          className="text-[18px] px-6 py-3 font-semibold rounded-[999px] bg-white/90 hover:bg-white text-gray-900 border border-gray-200 shadow-lg"
+          className="text-[18px] px-6 py-3 font-semibold rounded-[999px] bg-[#CD3E69] hover:bg-[#CD3E69]/90 text-white border border-transparent shadow-lg"
           onClick={cycleCategory}
         >
           {categories[currentCategory]}
